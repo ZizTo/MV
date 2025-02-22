@@ -44,11 +44,12 @@ int main()
     double xNC = dih;
     double dfx = dfunc(dih);
     double fx = func(dih);
+    double xk1 = 1000;
     k = 0;
     cout << "| " << k << " | " << xNC << " |       -      |" << endl;
-    while (abs(fx) > eps)
+    while (abs(xNC - xk1) > eps)
     {
-        double xk1 = xNC;
+        xk1 = xNC;
         xNC -= fx / dfx;
         fx = func(xNC);
         k++;
@@ -62,10 +63,11 @@ int main()
     double xN = dih;
     fx = func(dih);
     k = 0;
+    xk1 = 1000;
     cout << "| " << k << " | " << xN << " |       -      |" << endl;
-    while (abs(fx) > eps)
+    while (abs(xN - xk1) > eps)
     {
-        double xk1 = xN;
+        xk1 = xN;
         xN -= fx / dfunc(dih);
         fx = func(xN);
         k++;
@@ -79,7 +81,7 @@ int main()
     double fxa = func(a), fxb = func(b);
     k = 0;
     cout << "| " << k << " | " << b << " |       -      |" << endl;
-    while (abs(fxb) > eps) { 
+    while (abs(b - a) > eps) {
         double c = b - fxb * (b - a) / (fxb - fxa);
         a = b; b = c; fxa = fxb; fxb = func(c);
         k++;
