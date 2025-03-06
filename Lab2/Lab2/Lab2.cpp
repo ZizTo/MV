@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -19,7 +20,7 @@ double f2(double x) {
     return 1.0 / (1.0 + 12.0 * pow(x, 4));
 }
 
-vector<double> equidistant_nodes(int n, double (*f)(double)) {
+vector<double> P(int n, double (*f)(double)) {
     vector<double> nodes(n + 1);
     for (int i = 0; i <= n; ++i) {
         nodes[i] = a + i * (b - a) / n;
@@ -27,7 +28,7 @@ vector<double> equidistant_nodes(int n, double (*f)(double)) {
     return nodes;
 }
 
-vector<double> chebyshev_nodes(int n, double (*f)(double)) {
+vector<double> C(int n, double (*f)(double)) {
     vector<double> nodes(n + 1);
     for (int i = 0; i <= n; ++i) {
         nodes[i] = (a + b) / 2 + (b - a) / 2 * cos((2 * i + 1) * M_PI / (2 * (n + 1)));
@@ -36,7 +37,7 @@ vector<double> chebyshev_nodes(int n, double (*f)(double)) {
     return nodes;
 }
 
-vector<vector<double>> divided_differences(const vector<double>& nodes, double (*f)(double)) {
+vector<vector<double>> diff(vector<double> nodes, double (*f)(double)) {
     int n = nodes.size();
     vector<vector<double>> table(n, vector<double>(n));
 
@@ -52,15 +53,15 @@ vector<vector<double>> divided_differences(const vector<double>& nodes, double (
     return table;
 }
 
-double newton_poly(double x, const vector<double>& nodes, const vector<vector<double>>& table) {
-    double result = table[0][0];
-    double product = 1.0;
+double newton(double x, vector<double> nodes, vector<vector<double>> table) {
+    double res = table[0][0];
+    double mnozh = 1.0;
 
     for (int i = 1; i < nodes.size(); ++i) {
-        product *= (x - nodes[i - 1]);
-        result += table[0][i] * product;
+        mnozh *= (x - nodes[i - 1]);
+        res += table[0][i] * mnozh;
     }
-    return result;
+    return res;
 }
 
 
@@ -72,70 +73,85 @@ double printmax(vector<double> x_vals, vector<double> y_vals, double (*f)(double
     return maxc;
 }
 
+void toFile(string filename, vector<double> x_vals, vector<double> y_vals) {
+    ofstream file(filename);
+    for (size_t i = 0; i < x_vals.size(); ++i) {
+        file << x_vals[i] << " " << y_vals[i] << endl;
+    }
+    file.close();
+}
+
 int main() {
     vector<int> n_values = { 3, 5, 10, 15, 20, 30 };
     cout << "f1 - C" << endl;
     for (int n : n_values) {
         vector<double> nodes;
-        nodes = chebyshev_nodes(n, f1);
+        nodes = C(n, f1);
 
-        auto table = divided_differences(nodes, f1);
+        auto table = diff(nodes, f1);
 
         vector<double> x_vals, y_vals;
         for (int i = 0; i <= 100; ++i) {
             double x = a + i * (b - a) / 100;
             x_vals.push_back(x);
-            y_vals.push_back(newton_poly(x, nodes, table));
+            y_vals.push_back(newton(x, nodes, table));
         }
         cout << n << " | " << printmax(x_vals, y_vals, f1) << endl;
+
+        toFile("funcC1-n" + std::to_string(n) + ".txt", x_vals, y_vals);
     }
     cout << endl << endl << "f1 - P" << endl;
     for (int n : n_values) {
         vector<double> nodes;
-        nodes = equidistant_nodes(n, f1);
+        nodes = P(n, f1);
 
-        auto table = divided_differences(nodes, f1);
+        auto table = diff(nodes, f1);
 
         vector<double> x_vals, y_vals;
         for (int i = 0; i <= 100; ++i) {
             double x = a + i * (b - a) / 100;
             x_vals.push_back(x);
-            y_vals.push_back(newton_poly(x, nodes, table));
+            y_vals.push_back(newton(x, nodes, table));
         }
 
         cout << n << " | " << printmax(x_vals, y_vals, f1) << endl;
+
+        toFile("funcP1-n" + std::to_string(n) + ".txt", x_vals, y_vals);
     }
     cout << endl << endl << "f2 - C" << endl;
     for (int n : n_values) {
         vector<double> nodes;
-        nodes = chebyshev_nodes(n, f2);
+        nodes = C(n, f2);
 
-        auto table = divided_differences(nodes, f2);
+        auto table = diff(nodes, f2);
 
         vector<double> x_vals, y_vals;
         for (int i = 0; i <= 100; ++i) {
             double x = a + i * (b - a) / 100;
             x_vals.push_back(x);
-            y_vals.push_back(newton_poly(x, nodes, table));
+            y_vals.push_back(newton(x, nodes, table));
         }
 
         cout << n << " | " << printmax(x_vals, y_vals, f2) << endl;
+
+        toFile("funcC2-n" + std::to_string(n) + ".txt", x_vals, y_vals);
     }
     cout << endl << endl << "f2 - P" << endl;
     for (int n : n_values) {
         vector<double> nodes;
-        nodes = equidistant_nodes(n, f2);
+        nodes = P(n, f2);
 
-        auto table = divided_differences(nodes, f2);
+        auto table = diff(nodes, f2);
 
         vector<double> x_vals, y_vals;
         for (int i = 0; i <= 100; ++i) {
             double x = a + i * (b - a) / 100;
             x_vals.push_back(x);
-            y_vals.push_back(newton_poly(x, nodes, table));
+            y_vals.push_back(newton(x, nodes, table));
         }
 
         cout << n << " | " << printmax(x_vals, y_vals, f2) << endl;
+        toFile("funcP2-n" + std::to_string(n) + ".txt", x_vals, y_vals);
     }
 
     return 0;
