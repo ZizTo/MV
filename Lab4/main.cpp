@@ -1,32 +1,3 @@
-/*#include <iostream>
-#include <cmath>
-
-using namespace std;
-
-float eps = 1e-7;
-
-float func(float x) {
-    
-}
-
-float QsrPr(float h, int N)
-
-void integ(float a, float b, float(*)(float, int)) {
-    int N = 1;
-    while () {
-        N*=2;
-        float h = (b-a)/N;
-    }
-} 
-
-int main() {
-    integ(0, M_PI/4, );
-
-
-}
-
-*/
-
 #include <iostream>
 #include <cmath>
 #include <iomanip>
@@ -73,29 +44,26 @@ double rungeError(double Qh, double Qh2, int p) {
     return (Qh - Qh2) / (pow(2, p) - 1.0);
 }
 
-void gaussQuadratureNodes4(vector<double>& nodes, vector<double>& weights) {
-    // Узлы на [-1, 1]
-    nodes.resize(4);
-    nodes[0] = -sqrt((3.0 + 2.0 * sqrt(6.0/5.0)) / 7.0);
-    nodes[1] = -sqrt((3.0 - 2.0 * sqrt(6.0/5.0)) / 7.0);
-    nodes[2] = sqrt((3.0 - 2.0 * sqrt(6.0/5.0)) / 7.0);
-    nodes[3] = sqrt((3.0 + 2.0 * sqrt(6.0/5.0)) / 7.0);
+void gaussQuadratureNodes4(vector<double>& t, vector<double>& A) {
+    t.resize(4);
+    t[0] = -sqrt((3.0 + 2.0 * sqrt(6.0/5.0)) / 7.0);
+    t[1] = -sqrt((3.0 - 2.0 * sqrt(6.0/5.0)) / 7.0);
+    t[2] = sqrt((3.0 - 2.0 * sqrt(6.0/5.0)) / 7.0);
+    t[3] = sqrt((3.0 + 2.0 * sqrt(6.0/5.0)) / 7.0);
     
-    // Веса
-    weights.resize(4);
-    weights[0] = (18.0 - sqrt(30.0)) / 36.0;
-    weights[1] = (18.0 + sqrt(30.0)) / 36.0;
-    weights[2] = (18.0 + sqrt(30.0)) / 36.0;
-    weights[3] = (18.0 - sqrt(30.0)) / 36.0;
+    A.resize(4);
+    A[0] = (18.0 - sqrt(30.0)) / 36.0;
+    A[1] = (18.0 + sqrt(30.0)) / 36.0;
+    A[2] = (18.0 + sqrt(30.0)) / 36.0;
+    A[3] = (18.0 - sqrt(30.0)) / 36.0;
 }
 
-// Квадратурная формула НАСТ с k узлами (k = 4 для варианта 4)
 double gaussQuadrature(double a, double b, int k) {
-    vector<double> nodes, weights;
+    vector<double> t, A;
     
     switch(k) {
         case 4:
-            gaussQuadratureNodes4(nodes, weights);
+            gaussQuadratureNodes4(t, A);
             break;
         default:
             cerr << "Unsupported number of nodes: " << k << endl;
@@ -108,16 +76,16 @@ double gaussQuadrature(double a, double b, int k) {
     double half_length = (b - a) / 2.0;
     
     for (int i = 0; i < k; i++) {
-        double x = mid + half_length * nodes[i];  // Преобразование узла
-        result += weights[i] * f(x);
+        double x = mid + half_length * t[i];
+        result += A[i] * f(x);
     }
     
     return half_length * result;
 }
 
 int main() {
-    double a = 0.0;          // Нижний предел интегрирования
-    double b = M_PI / 4.0;     // Верхний предел интегрирования
+    double a = 0.0;
+    double b = M_PI / 4.0;
     
     cout << fixed << setprecision(10);
     
@@ -131,9 +99,9 @@ int main() {
 
     int por1 = 2;
     int n = 2;
-    double prev_error = 1.0; // Начальное значение для погрешности
+    double err = 1.0;
     
-    while (abs(prev_error) > eps) {
+    while (abs(err) > eps) {
         double h = (b - a) / n;
         double Qh = srPriamoug(a, b, n);
         double Qh2 = srPriamoug(a, b, 2*n);
@@ -146,7 +114,7 @@ int main() {
         cout << " | " << setw(13) << error;
         cout << " | " << setw(13) << abs_error << " |" << endl;
         
-        prev_error = error;
+        err = error;
         n *= 2;
         
         if (n > 1000000) {
@@ -163,9 +131,9 @@ int main() {
     
     int por2 = 4;
     n = 2;
-    prev_error = 1.0;
+    err = 1.0;
     
-    while (abs(prev_error) > eps) {
+    while (abs(err) > eps) {
         double h = (b - a) / n;
         double Qh = simpsonKF(a, b, n);
         double Qh2 = simpsonKF(a, b, 2*n);
@@ -178,7 +146,7 @@ int main() {
         cout << " | " << setw(13) << error;
         cout << " | " << setw(13) << abs_error << " |" << endl;
         
-        prev_error = error;
+        err = error;
         n *= 2;
         
         if (n > 1000000) {
@@ -187,7 +155,7 @@ int main() {
     }
     cout << "---------------------------------------------------------------------------------" << endl;
     
-    // Задание 2: КФ НАСТ с k узлами
+    // Задание 2: КФ НАСТ с 4 узлами
     int k = 4;
     cout << "\nЗадание 2: Квадратурная формула наивысшей алгебраической степени точности (НАСТ)" << endl;
     cout << "Количество узлов k = " << k << endl;
