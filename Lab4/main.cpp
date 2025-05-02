@@ -41,10 +41,10 @@ double simpsonKF(double a, double b, int n) {
 }
 
 double rungeError(double Qh, double Qh2, int p) {
-    return (Qh - Qh2) / (pow(2, p) - 1.0);
+    return abs(Qh - Qh2) / (pow(2, p) - 1.0);
 }
 
-void gaussQuadratureNodes4(vector<double>& t, vector<double>& A) {
+void gaussKF4(vector<double>& t, vector<double>& A) {
     t.resize(4);
     t[0] = -sqrt((3.0 + 2.0 * sqrt(6.0/5.0)) / 7.0);
     t[1] = -sqrt((3.0 - 2.0 * sqrt(6.0/5.0)) / 7.0);
@@ -58,19 +58,20 @@ void gaussQuadratureNodes4(vector<double>& t, vector<double>& A) {
     A[3] = (18.0 - sqrt(30.0)) / 36.0;
 }
 
-double gaussQuadrature(double a, double b, int k) {
+double gaussKF(double a, double b, int k) {
     vector<double> t, A;
     
     switch(k) {
         case 4:
-            gaussQuadratureNodes4(t, A);
+        gaussKF4(t, A);
             break;
         default:
-            cerr << "Unsupported number of nodes: " << k << endl;
-            return 0.0;
+            cout << "Unsupported number of nodes: " << k << endl;
+            return 0;
     }
     
-    double result = 0.0;
+    double result = 0;
+
     // Преобразование отрезка [a, b] к [-1, 1]
     double mid = (b + a) / 2.0;
     double half_length = (b - a) / 2.0;
@@ -92,10 +93,10 @@ int main() {
     cout << "Задание 1" << endl;
     
     cout << "\nКвадратурная формула средних прямоугольников:" << endl;
-    cout << "---------------------------------------------------------------------------------" << endl;
-    cout << "| Число разбиений|      Шаг      |  Приближенное |   Оценка     |  Абсолютная   |" << endl;
-    cout << "|       N        |       h       |   значение    |  погрешности |   погрешность |" << endl;
-    cout << "---------------------------------------------------------------------------------" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
+    cout << "| Число разбиений|      Шаг      |  Приближенное |   Оценка      |  Абсолютная   |" << endl;
+    cout << "|       N        |       h       |   значение    |  погрешности  |   погрешность |" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
 
     int por1 = 2;
     int n = 2;
@@ -103,14 +104,14 @@ int main() {
     
     while (abs(err) > eps) {
         double h = (b - a) / n;
-        double Qh = srPriamoug(a, b, n);
-        double Qh2 = srPriamoug(a, b, 2*n);
+        double Qh = srPriamoug(a, b, n/2);
+        double Qh2 = srPriamoug(a, b, n);
         double error = rungeError(Qh, Qh2, por1);
-        double abs_error = abs(Qh - exactValue);
+        double abs_error = abs(Qh2 - exactValue);
         
         cout << "| " << setw(14) << n;
         cout << " | " << setw(13) << h;
-        cout << " | " << setw(13) << Qh;
+        cout << " | " << setw(13) << Qh2;
         cout << " | " << setw(13) << error;
         cout << " | " << setw(13) << abs_error << " |" << endl;
         
@@ -121,13 +122,13 @@ int main() {
             break;
         }
     }
-    cout << "---------------------------------------------------------------------------------" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
     
     cout << "\nКвадратурная формула Симпсона:" << endl;
-    cout << "---------------------------------------------------------------------------------" << endl;
-    cout << "| Число разбиений|      Шаг      |  Приближенное |   Оценка     |  Абсолютная   |" << endl;
-    cout << "|       N        |       h       |   значение    |  погрешности |   погрешность |" << endl;
-    cout << "---------------------------------------------------------------------------------" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
+    cout << "| Число разбиений|      Шаг      |  Приближенное |   Оценка      |  Абсолютная   |" << endl;
+    cout << "|       N        |       h       |   значение    |  погрешности  |   погрешность |" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
     
     int por2 = 4;
     n = 2;
@@ -135,14 +136,14 @@ int main() {
     
     while (abs(err) > eps) {
         double h = (b - a) / n;
-        double Qh = simpsonKF(a, b, n);
-        double Qh2 = simpsonKF(a, b, 2*n);
+        double Qh = simpsonKF(a, b, n/2);
+        double Qh2 = simpsonKF(a, b, n);
         double error = rungeError(Qh, Qh2, por2);
-        double abs_error = abs(Qh - exactValue);
+        double abs_error = abs(Qh2 - exactValue);
         
         cout << "| " << setw(14) << n;
         cout << " | " << setw(13) << h;
-        cout << " | " << setw(13) << Qh;
+        cout << " | " << setw(13) << Qh2;
         cout << " | " << setw(13) << error;
         cout << " | " << setw(13) << abs_error << " |" << endl;
         
@@ -153,14 +154,13 @@ int main() {
             break;
         }
     }
-    cout << "---------------------------------------------------------------------------------" << endl;
+    cout << "----------------------------------------------------------------------------------" << endl;
     
     // Задание 2: КФ НАСТ с 4 узлами
     int k = 4;
-    cout << "\nЗадание 2: Квадратурная формула наивысшей алгебраической степени точности (НАСТ)" << endl;
-    cout << "Количество узлов k = " << k << endl;
+    cout << endl;
     
-    double gauss_result = gaussQuadrature(a, b, k);
+    double gauss_result = gaussKF(a, b, k);
     double gauss_error = abs(gauss_result - exactValue);
     
     cout << "Приближенное значение: " << gauss_result << endl;
