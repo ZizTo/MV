@@ -19,18 +19,18 @@ double exact(double x) {
 }
 
 double trapezoidal_step(double x, double y, double h, double tol = 1e-10) {
-    double y_next = y + h * f(x, y);
+    double yn = y + h * f(x, y);
     double error = 1.0;
-    int max_iter = 100;
+    int max_iter = 1000;
 
     for (int iter = 0; iter < max_iter && error > tol; ++iter) {
-        double F = y_next - y - h / 2 * (f(x, y) + f(x + h, y_next));
-        double dF = 1 - h / 2 * df(x + h, y_next);
+        double F = yn - y - h / 2 * (f(x, y) + f(x + h, yn));
+        double dF = 1 - h / 2 * df(x + h, yn);
         double delta = -F / dF;
-        y_next += delta;
+        yn += delta;
         error = fabs(delta);
     }
-    return y_next;
+    return yn;
 }
 
 int main()
@@ -115,5 +115,5 @@ int main()
     cout << "------------------METOD TRAPECI-----------------" << endl;
     cout << "with exact: " << maxnettr << endl;
     cout << "   with h1: " << maxnettry << endl;
-    cout << "       Rh2: " << maxnettry / (16 - 1) << endl;
+    cout << "       Rh2: " << maxnettry / (4 - 1) << endl;
 }
